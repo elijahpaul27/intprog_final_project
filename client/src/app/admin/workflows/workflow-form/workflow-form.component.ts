@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Workflow, WorkflowStep } from '../../../_models/workflow.model';
-import { Department } from '../../../_models/department.model';
-import { WorkflowService } from '../../../_services/workflow.service';
-import { DepartmentService } from '../../../_services/department.service';
+import { WorkflowService } from '../../services/workflow.service';
+import { DepartmentService } from '../../services/department.service';
+import { EmployeeService } from '../../services/employee.service';
+import { Workflow } from '../../models/workflow.model';
+import { Department } from '../../models/department.model';
+import { Employee } from '../../models/employee.model';
 
 @Component({
     selector: 'app-workflow-form',
@@ -14,34 +16,37 @@ import { DepartmentService } from '../../../_services/department.service';
 export class WorkflowFormComponent implements OnInit {
     workflowForm: FormGroup;
     departments: Department[] = [];
-    isEditMode = false;
+    employees: Employee[] = [];
     loading = false;
+    submitting = false;
     error = '';
-    workflowId: number | null = null;
+    isEditMode = false;
 
     constructor(
-        private formBuilder: FormBuilder,
+        private fb: FormBuilder,
         private workflowService: WorkflowService,
         private departmentService: DepartmentService,
-        private router: Router,
-        private route: ActivatedRoute
+        private employeeService: EmployeeService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {
-        this.workflowForm = this.formBuilder.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
-            description: ['', [Validators.required, Validators.minLength(10)]],
-            departmentId: ['', Validators.required],
-            steps: this.formBuilder.array([])
+        this.workflowForm = this.fb.group({
+            name: ['', [Validators.required]],
+            description: ['', [Validators.required]],
+            type: ['', [Validators.required]],
+            employeeId: [null, [Validators.required]],
+            isActive: [true],
+            steps: this.fb.array([])
         });
     }
 
     ngOnInit(): void {
         this.loadDepartments();
-        this.workflowId = this.route.snapshot.params['id'];
-        if (this.workflowId) {
+        this.loadEmployees();
+        const id = this.route.snapshot.params['id'];
+        if (id) {
             this.isEditMode = true;
-            this.loadWorkflow();
-        } else {
-            this.addStep(); // Add initial step for new workflow
+            this.loadWorkflow(id);
         }
     }
 
@@ -49,66 +54,48 @@ export class WorkflowFormComponent implements OnInit {
         return this.workflowForm.get('steps') as FormArray;
     }
 
-    createStepForm(): FormGroup {
-        return this.formBuilder.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
-            order: [0],
-            approverRole: ['', [Validators.required, Validators.minLength(3)]],
-            isActive: [true]
-        });
-    }
-
-    addStep(): void {
-        const stepForm = this.createStepForm();
-        stepForm.patchValue({ order: this.steps.length });
-        this.steps.push(stepForm);
-    }
-
-    removeStep(index: number): void {
-        if (this.steps.length > 1) {
-            this.steps.removeAt(index);
-            // Update order of remaining steps
-            this.steps.controls.forEach((control, i) => {
-                control.patchValue({ order: i });
-            });
-        }
-    }
-
     loadDepartments(): void {
+        this.loading = true;
         this.departmentService.getAll().subscribe({
             next: (departments) => {
                 this.departments = departments;
+                this.loading = false;
             },
             error: (error) => {
                 this.error = 'Error loading departments';
+                this.loading = false;
                 console.error('Error loading departments:', error);
             }
         });
     }
 
-    loadWorkflow(): void {
-        if (!this.workflowId) return;
-
+    loadEmployees(): void {
         this.loading = true;
-        this.workflowService.getById(this.workflowId).subscribe({
+        this.employeeService.getAll().subscribe({
+            next: (employees) => {
+                this.employees = employees;
+                this.loading = false;
+            },
+            error: (error) => {
+                this.error = 'Error loading employees';
+                this.loading = false;
+                console.error('Error loading employees:', error);
+            }
+        });
+    }
+
+    loadWorkflow(id: number): void {
+        this.loading = true;
+        this.workflowService.getById(id).subscribe({
             next: (workflow) => {
-                // Clear existing steps
-                while (this.steps.length) {
-                    this.steps.removeAt(0);
-                }
-
-                // Add workflow steps
-                workflow.steps.forEach(step => {
-                    const stepForm = this.createStepForm();
-                    stepForm.patchValue(step);
-                    this.steps.push(stepForm);
-                });
-
                 this.workflowForm.patchValue({
                     name: workflow.name,
                     description: workflow.description,
-                    departmentId: workflow.departmentId
+                    type: workflow.type,
+                    employeeId: workflow.employeeId,
+                    isActive: workflow.isActive
                 });
+                workflow.steps.forEach(step => this.addStep(step));
                 this.loading = false;
             },
             error: (error) => {
@@ -119,38 +106,67 @@ export class WorkflowFormComponent implements OnInit {
         });
     }
 
+    createStep(step?: any): FormGroup {
+        return this.fb.group({
+            name: [step?.name || '', [Validators.required]],
+            description: [step?.description || '', [Validators.required]],
+            order: [step?.order || this.steps.length + 1, [Validators.required]],
+            departmentId: [step?.departmentId || '', [Validators.required]],
+            isRequired: [step?.isRequired || false],
+            estimatedDays: [step?.estimatedDays || 1, [Validators.required, Validators.min(1)]]
+        });
+    }
+
+    addStep(step?: any): void {
+        this.steps.push(this.createStep(step));
+    }
+
+    removeStep(index: number): void {
+        this.steps.removeAt(index);
+        // Update order of remaining steps
+        this.steps.controls.forEach((control, idx) => {
+            control.patchValue({ order: idx + 1 });
+        });
+    }
+
     onSubmit(): void {
         if (this.workflowForm.invalid) {
             return;
         }
 
-        this.loading = true;
-        const workflow: Workflow = this.workflowForm.value;
+        this.submitting = true;
+        const workflowData = {
+            ...this.workflowForm.value,
+            totalSteps: this.steps.length
+        };
 
-        if (this.isEditMode && this.workflowId) {
-            this.workflowService.update(this.workflowId, workflow).subscribe({
+        if (this.isEditMode) {
+            const id = this.route.snapshot.params['id'];
+            this.workflowService.update(id, workflowData).subscribe({
                 next: () => {
-                    this.router.navigate(['/workflows']);
+                    this.router.navigate(['/admin/workflows']);
                 },
                 error: (error) => {
                     this.error = 'Error updating workflow';
-                    this.loading = false;
+                    this.submitting = false;
                     console.error('Error updating workflow:', error);
                 }
             });
         } else {
-            this.workflowService.create(workflow).subscribe({
+            this.workflowService.create(workflowData).subscribe({
                 next: () => {
-                    this.router.navigate(['/workflows']);
+                    this.router.navigate(['/admin/workflows']);
                 },
                 error: (error) => {
                     this.error = 'Error creating workflow';
-                    this.loading = false;
+                    this.submitting = false;
                     console.error('Error creating workflow:', error);
                 }
             });
         }
     }
 
-    get f() { return this.workflowForm.controls; }
+    cancel(): void {
+        this.router.navigate(['/admin/workflows']);
+    }
 } 

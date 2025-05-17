@@ -26,8 +26,17 @@ module.exports = {
 async function authenticate({ email, password, ipAddress }) {
     const account = await db.Account.scope('withHash').findOne({ where: { email } });
 
-    if (!account || !account.isVerified || !(await bcrypt.compare(password, account.passwordHash))) {
-        throw 'Email or password is incorrect';
+    if (!account) {
+        throw 'Email is not registered';
+    }
+
+    if (!account.isVerified) {
+        throw 'Email is not verified';
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
+    if (!isPasswordValid) {
+        throw 'Password is incorrect';
     }
 
     // authentication successful so generate jwt and refresh tokens
@@ -88,8 +97,9 @@ async function register(params, origin) {
     // create account object
     const account = new db.Account(params);
 
-    // Make all accounts admin for testing
-    account.role = Role.Admin;
+    // Check if this is the first account
+    const isFirstAccount = await db.Account.count() === 0;
+    account.role = isFirstAccount ? Role.Admin : Role.User;
     account.verificationToken = randomTokenString();
 
     // hash password
@@ -222,8 +232,16 @@ async function hash(password) {
 }
 
 function generateJwtToken(account) {
-    // create a jwt token containing the account id that expires in 15 minutes
-    return jwt.sign({ sub: account.id, id: account.id }, config.secret, { expiresIn: '15m' });
+    // create a jwt token containing the account id that expires in 24 hours
+    return jwt.sign(
+        { 
+            sub: account.id,
+            id: account.id,
+            role: account.role
+        }, 
+        config.secret, 
+        { expiresIn: '24h' }
+    );
 }
 
 async function generateRefreshToken(account, ipAddress) {

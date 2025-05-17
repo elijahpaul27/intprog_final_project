@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Employee } from '../../../_models/employee.model';
-import { Department } from '../../../_models/department.model';
-import { EmployeeService } from '../../../_services/employee.service';
-import { DepartmentService } from '../../../_services/department.service';
+import { EmployeeService } from '../../services/employee.service';
+import { DepartmentService } from '../../services/department.service';
+import { Employee } from '../../models/employee.model';
+import { Department } from '../../models/department.model';
 
 @Component({
     selector: 'app-employee-form',
@@ -14,58 +14,67 @@ import { DepartmentService } from '../../../_services/department.service';
 export class EmployeeFormComponent implements OnInit {
     employeeForm: FormGroup;
     departments: Department[] = [];
-    isEditMode = false;
     loading = false;
+    submitting = false;
     error = '';
-    employeeId: number | null = null;
+    isEditMode = false;
+    currentEmployeeId: number | null = null;
 
     constructor(
-        private formBuilder: FormBuilder,
+        private fb: FormBuilder,
         private employeeService: EmployeeService,
         private departmentService: DepartmentService,
-        private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private router: Router
     ) {
-        this.employeeForm = this.formBuilder.group({
-            firstName: ['', [Validators.required, Validators.minLength(2)]],
-            lastName: ['', [Validators.required, Validators.minLength(2)]],
+        this.employeeForm = this.fb.group({
+            firstName: ['', [Validators.required]],
+            lastName: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
-            departmentId: ['', Validators.required],
-            position: ['', [Validators.required, Validators.minLength(3)]],
-            hireDate: ['', Validators.required]
+            position: ['', [Validators.required]],
+            departmentId: [null, [Validators.required]],
+            salary: [null, [Validators.required, Validators.min(0)]],
+            isActive: [true]
         });
     }
 
     ngOnInit(): void {
         this.loadDepartments();
-        this.employeeId = this.route.snapshot.params['id'];
-        if (this.employeeId) {
+        const id = this.route.snapshot.params['id'];
+        if (id) {
             this.isEditMode = true;
-            this.loadEmployee();
+            this.currentEmployeeId = +id;
+            this.loadEmployee(id);
         }
     }
 
     loadDepartments(): void {
+        this.loading = true;
         this.departmentService.getAll().subscribe({
             next: (departments) => {
                 this.departments = departments;
+                this.loading = false;
             },
             error: (error) => {
                 this.error = 'Error loading departments';
+                this.loading = false;
                 console.error('Error loading departments:', error);
             }
         });
     }
 
-    loadEmployee(): void {
-        if (!this.employeeId) return;
-
+    loadEmployee(id: number): void {
         this.loading = true;
-        this.employeeService.getById(this.employeeId).subscribe({
+        this.employeeService.getById(id).subscribe({
             next: (employee) => {
                 this.employeeForm.patchValue({
-                    ...employee,
-                    hireDate: new Date(employee.hireDate).toISOString().split('T')[0]
+                    firstName: employee.firstName,
+                    lastName: employee.lastName,
+                    email: employee.email,
+                    position: employee.position,
+                    departmentId: employee.departmentId,
+                    salary: employee.salary,
+                    isActive: employee.isActive
                 });
                 this.loading = false;
             },
@@ -82,36 +91,37 @@ export class EmployeeFormComponent implements OnInit {
             return;
         }
 
-        this.loading = true;
-        const employee: Employee = {
-            ...this.employeeForm.value,
-            hireDate: new Date(this.employeeForm.value.hireDate)
+        this.submitting = true;
+        const employeeData = {
+            ...this.employeeForm.value
         };
 
-        if (this.isEditMode && this.employeeId) {
-            this.employeeService.update(this.employeeId, employee).subscribe({
+        if (this.isEditMode && this.currentEmployeeId) {
+            this.employeeService.update(this.currentEmployeeId, employeeData).subscribe({
                 next: () => {
-                    this.router.navigate(['/employees']);
+                    this.router.navigate(['/admin/employees']);
                 },
                 error: (error) => {
                     this.error = 'Error updating employee';
-                    this.loading = false;
+                    this.submitting = false;
                     console.error('Error updating employee:', error);
                 }
             });
         } else {
-            this.employeeService.create(employee).subscribe({
+            this.employeeService.create(employeeData).subscribe({
                 next: () => {
-                    this.router.navigate(['/employees']);
+                    this.router.navigate(['/admin/employees']);
                 },
                 error: (error) => {
                     this.error = 'Error creating employee';
-                    this.loading = false;
+                    this.submitting = false;
                     console.error('Error creating employee:', error);
                 }
             });
         }
     }
 
-    get f() { return this.employeeForm.controls; }
+    cancel(): void {
+        this.router.navigate(['/admin/employees']);
+    }
 } 

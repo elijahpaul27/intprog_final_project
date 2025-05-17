@@ -32,6 +32,10 @@ export class WorkflowService {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }
 
+    toggleStatus(id: number, isActive: boolean): Observable<Workflow> {
+        return this.http.patch<Workflow>(`${this.apiUrl}/${id}/status`, { isActive });
+    }
+
     getByDepartment(departmentId: number): Observable<Workflow[]> {
         return this.http.get<Workflow[]>(`${this.apiUrl}/department/${departmentId}`);
     }

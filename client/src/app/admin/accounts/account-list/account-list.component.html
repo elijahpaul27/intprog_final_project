@@ -1,4 +1,39 @@
 <div class="container">
-    <h2>Accounts Management</h2>
-    <p>This is the accounts management page.</p>
+    <div class="header">
+        <h1>Accounts</h1>
+        <button class="btn btn-primary" (click)="addAccount()">
+            <i class="fas fa-plus"></i> Add Account
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let account of accounts">
+                    <td>{{account.firstName}} {{account.lastName}}</td>
+                    <td>{{account.email}}</td>
+                    <td>{{account.role}}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" (click)="editAccount(account.id)">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="deleteAccount(account.id)">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="accounts.length === 0">
+                    <td colspan="4" class="text-center">No accounts found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div> 

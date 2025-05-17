@@ -32,6 +32,18 @@ export class RequestService {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }
 
+    updateStatus(id: number, status: RequestStatus): Observable<Request> {
+        return this.http.patch<Request>(`${this.apiUrl}/${id}/status`, { status });
+    }
+
+    getByRequester(requesterId: number): Observable<Request[]> {
+        return this.http.get<Request[]>(`${this.apiUrl}/requester/${requesterId}`);
+    }
+
+    getByDepartment(departmentId: number): Observable<Request[]> {
+        return this.http.get<Request[]>(`${this.apiUrl}/department/${departmentId}`);
+    }
+
     getByEmployee(employeeId: number): Observable<Request[]> {
         return this.http.get<Request[]>(`${this.apiUrl}/employee/${employeeId}`);
     }

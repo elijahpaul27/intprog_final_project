@@ -1,82 +1,142 @@
 import { Component, OnInit } from '@angular/core';
-import { Workflow } from '../../../_models/workflow.model';
-import { WorkflowService } from '../../../_services/workflow.service';
-import { DepartmentService } from '../../../_services/department.service';
 import { Router } from '@angular/router';
+import { WorkflowService } from '../../services/workflow.service';
+import { Workflow } from '../../models/workflow.model';
 
 @Component({
     selector: 'app-workflow-list',
-    templateUrl: './workflow-list.component.html',
-    styleUrls: ['./workflow-list.component.less']
+    template: `
+        <div class="container">
+            <div class="header">
+                <h2>Workflows Management</h2>
+                <button class="btn btn-primary" (click)="addWorkflow()">
+                    <i class="fas fa-plus"></i> Add Workflow
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Steps</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let workflow of workflows">
+                            <td>{{workflow.name}}</td>
+                            <td>{{workflow.description}}</td>
+                            <td>{{workflow.steps.length}} steps</td>
+                            <td>
+                                <div class="form-check form-switch">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        [checked]="workflow.isActive"
+                                        (change)="toggleStatus(workflow)"
+                                    >
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info me-2" (click)="editWorkflow(workflow.id)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" (click)="deleteWorkflow(workflow.id)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `,
+    styles: [`
+        .container {
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin: 0;
+            color: #333;
+        }
+        .table {
+            margin-top: 20px;
+        }
+        .btn {
+            margin-right: 5px;
+        }
+        .form-check-input {
+            cursor: pointer;
+        }
+    `]
 })
 export class WorkflowListComponent implements OnInit {
     workflows: Workflow[] = [];
-    departments: Map<number, string> = new Map();
-    loading = false;
-    error = '';
 
     constructor(
         private workflowService: WorkflowService,
-        private departmentService: DepartmentService,
         private router: Router
     ) { }
 
-    ngOnInit(): void {
+    ngOnInit() {
         this.loadWorkflows();
-        this.loadDepartments();
     }
 
-    loadWorkflows(): void {
-        this.loading = true;
-        this.workflowService.getAll().subscribe({
-            next: (data) => {
-                this.workflows = data;
-                this.loading = false;
-            },
-            error: (error) => {
-                this.error = 'Error loading workflows';
-                this.loading = false;
-                console.error('Error loading workflows:', error);
-            }
-        });
-    }
-
-    loadDepartments(): void {
-        this.departmentService.getAll().subscribe({
-            next: (departments) => {
-                departments.forEach(dept => {
-                    this.departments.set(dept.id, dept.name);
-                });
-            },
-            error: (error) => {
-                console.error('Error loading departments:', error);
-            }
-        });
-    }
-
-    getDepartmentName(departmentId: number): string {
-        return this.departments.get(departmentId) || 'Unknown Department';
-    }
-
-    getStepCount(workflow: Workflow): number {
-        return workflow.steps.length;
-    }
-
-    editWorkflow(id: number): void {
-        this.router.navigate(['/workflows/edit', id]);
-    }
-
-    deleteWorkflow(id: number): void {
-        if (confirm('Are you sure you want to delete this workflow?')) {
-            this.workflowService.delete(id).subscribe({
-                next: () => {
-                    this.workflows = this.workflows.filter(w => w.id !== id);
+    loadWorkflows() {
+        this.workflowService.getAll()
+            .subscribe({
+                next: (workflows) => {
+                    this.workflows = workflows;
                 },
                 error: (error) => {
-                    this.error = 'Error deleting workflow';
-                    console.error('Error deleting workflow:', error);
+                    console.error('Error loading workflows:', error);
                 }
             });
+    }
+
+    addWorkflow() {
+        this.router.navigate(['/admin/workflows/add']);
+    }
+
+    editWorkflow(id: number) {
+        this.router.navigate(['/admin/workflows/edit', id]);
+    }
+
+    deleteWorkflow(id: number) {
+        if (confirm('Are you sure you want to delete this workflow?')) {
+            this.workflowService.delete(id)
+                .subscribe({
+                    next: () => {
+                        this.workflows = this.workflows.filter(x => x.id !== id);
+                    },
+                    error: (error) => {
+                        console.error('Error deleting workflow:', error);
+                    }
+                });
         }
+    }
+
+    toggleStatus(workflow: Workflow) {
+        this.workflowService.toggleStatus(workflow.id, !workflow.isActive)
+            .subscribe({
+                next: (updatedWorkflow) => {
+                    const index = this.workflows.findIndex(w => w.id === workflow.id);
+                    if (index !== -1) {
+                        this.workflows[index] = updatedWorkflow;
+                    }
+                },
+                error: (error) => {
+                    console.error('Error toggling workflow status:', error);
+                }
+            });
     }
 } 

@@ -1,9 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 import { WorkflowFormComponent } from './workflow-form/workflow-form.component';
+
+const routes: Routes = [
+    { path: '', component: WorkflowListComponent },
+    { path: 'add', component: WorkflowFormComponent },
+    { path: 'edit/:id', component: WorkflowFormComponent }
+];
 
 @NgModule({
     declarations: [
@@ -13,11 +19,7 @@ import { WorkflowFormComponent } from './workflow-form/workflow-form.component';
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        RouterModule
-    ],
-    exports: [
-        WorkflowListComponent,
-        WorkflowFormComponent
+        RouterModule.forChild(routes)
     ]
 })
 export class WorkflowModule { } 

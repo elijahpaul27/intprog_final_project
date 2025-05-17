@@ -6,7 +6,9 @@ import { DepartmentListComponent } from './department-list/department-list.compo
 import { DepartmentFormComponent } from './department-form/department-form.component';
 
 const routes: Routes = [
-    { path: '', component: DepartmentListComponent }
+    { path: '', component: DepartmentListComponent },
+    { path: 'add', component: DepartmentFormComponent },
+    { path: 'edit/:id', component: DepartmentFormComponent }
 ];
 
 @NgModule({
@@ -18,10 +20,6 @@ const routes: Routes = [
         CommonModule,
         ReactiveFormsModule,
         RouterModule.forChild(routes)
-    ],
-    exports: [
-        DepartmentListComponent,
-        DepartmentFormComponent
     ]
 })
 export class DepartmentModule { } 

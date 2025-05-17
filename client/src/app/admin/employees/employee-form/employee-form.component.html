@@ -1,122 +1,125 @@
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">{{ isEditMode ? 'Edit Employee' : 'Create Employee' }}</h3>
+<div class="container">
+    <h2>{{isEditMode ? 'Edit Employee' : 'Add Employee'}}</h2>
+    
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input
+                        type="text"
+                        id="firstName"
+                        formControlName="firstName"
+                        class="form-control"
+                        [ngClass]="{ 'is-invalid': employeeForm.get('firstName')?.invalid && employeeForm.get('firstName')?.touched }"
+                    />
+                    <div *ngIf="employeeForm.get('firstName')?.invalid && employeeForm.get('firstName')?.touched" class="invalid-feedback">
+                        First name is required
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
-                        <div *ngIf="error" class="alert alert-danger" role="alert">
-                            {{ error }}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="firstName"
-                                    formControlName="firstName"
-                                    [ngClass]="{ 'is-invalid': f['firstName'].touched && f['firstName'].errors }"
-                                >
-                                <div *ngIf="f['firstName'].touched && f['firstName'].errors" class="invalid-feedback">
-                                    <div *ngIf="f['firstName'].errors['required']">First name is required</div>
-                                    <div *ngIf="f['firstName'].errors['minlength']">First name must be at least 2 characters</div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="lastName"
-                                    formControlName="lastName"
-                                    [ngClass]="{ 'is-invalid': f['lastName'].touched && f['lastName'].errors }"
-                                >
-                                <div *ngIf="f['lastName'].touched && f['lastName'].errors" class="invalid-feedback">
-                                    <div *ngIf="f['lastName'].errors['required']">Last name is required</div>
-                                    <div *ngIf="f['lastName'].errors['minlength']">Last name must be at least 2 characters</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input
-                                type="email"
-                                class="form-control"
-                                id="email"
-                                formControlName="email"
-                                [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].errors }"
-                            >
-                            <div *ngIf="f['email'].touched && f['email'].errors" class="invalid-feedback">
-                                <div *ngIf="f['email'].errors['required']">Email is required</div>
-                                <div *ngIf="f['email'].errors['email']">Please enter a valid email address</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="departmentId" class="form-label">Department</label>
-                            <select
-                                class="form-select"
-                                id="departmentId"
-                                formControlName="departmentId"
-                                [ngClass]="{ 'is-invalid': f['departmentId'].touched && f['departmentId'].errors }"
-                            >
-                                <option value="">Select Department</option>
-                                <option *ngFor="let dept of departments" [value]="dept.id">
-                                    {{ dept.name }}
-                                </option>
-                            </select>
-                            <div *ngIf="f['departmentId'].touched && f['departmentId'].errors" class="invalid-feedback">
-                                <div *ngIf="f['departmentId'].errors['required']">Department is required</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="position" class="form-label">Position</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="position"
-                                formControlName="position"
-                                [ngClass]="{ 'is-invalid': f['position'].touched && f['position'].errors }"
-                            >
-                            <div *ngIf="f['position'].touched && f['position'].errors" class="invalid-feedback">
-                                <div *ngIf="f['position'].errors['required']">Position is required</div>
-                                <div *ngIf="f['position'].errors['minlength']">Position must be at least 3 characters</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="hireDate" class="form-label">Hire Date</label>
-                            <input
-                                type="date"
-                                class="form-control"
-                                id="hireDate"
-                                formControlName="hireDate"
-                                [ngClass]="{ 'is-invalid': f['hireDate'].touched && f['hireDate'].errors }"
-                            >
-                            <div *ngIf="f['hireDate'].touched && f['hireDate'].errors" class="invalid-feedback">
-                                <div *ngIf="f['hireDate'].errors['required']">Hire date is required</div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-secondary" routerLink="/employees">
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary" [disabled]="loading || employeeForm.invalid">
-                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-                                {{ isEditMode ? 'Update' : 'Create' }}
-                            </button>
-                        </div>
-                    </form>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input
+                        type="text"
+                        id="lastName"
+                        formControlName="lastName"
+                        class="form-control"
+                        [ngClass]="{ 'is-invalid': employeeForm.get('lastName')?.invalid && employeeForm.get('lastName')?.touched }"
+                    />
+                    <div *ngIf="employeeForm.get('lastName')?.invalid && employeeForm.get('lastName')?.touched" class="invalid-feedback">
+                        Last name is required
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input
+                type="email"
+                id="email"
+                formControlName="email"
+                class="form-control"
+                [ngClass]="{ 'is-invalid': employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched }"
+            />
+            <div *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched" class="invalid-feedback">
+                <div *ngIf="employeeForm.get('email')?.errors?.['required']">Email is required</div>
+                <div *ngIf="employeeForm.get('email')?.errors?.['email']">Please enter a valid email address</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="position">Position</label>
+            <input
+                type="text"
+                id="position"
+                formControlName="position"
+                class="form-control"
+                [ngClass]="{ 'is-invalid': employeeForm.get('position')?.invalid && employeeForm.get('position')?.touched }"
+            />
+            <div *ngIf="employeeForm.get('position')?.invalid && employeeForm.get('position')?.touched" class="invalid-feedback">
+                Position is required
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="departmentId">Department</label>
+            <select
+                id="departmentId"
+                formControlName="departmentId"
+                class="form-control"
+                [ngClass]="{ 'is-invalid': employeeForm.get('departmentId')?.invalid && employeeForm.get('departmentId')?.touched }"
+            >
+                <option value="">Select Department</option>
+                <option *ngFor="let dept of departments" [value]="dept.id">
+                    {{dept.name}}
+                </option>
+            </select>
+            <div *ngIf="employeeForm.get('departmentId')?.invalid && employeeForm.get('departmentId')?.touched" class="invalid-feedback">
+                Department is required
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="salary">Salary</label>
+            <input
+                type="number"
+                id="salary"
+                formControlName="salary"
+                class="form-control"
+                [ngClass]="{ 'is-invalid': employeeForm.get('salary')?.invalid && employeeForm.get('salary')?.touched }"
+                min="0"
+                step="0.01"
+            />
+            <div *ngIf="employeeForm.get('salary')?.invalid && employeeForm.get('salary')?.touched" class="invalid-feedback">
+                Salary is required and must be a positive number
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-check">
+                <input
+                    type="checkbox"
+                    id="isActive"
+                    formControlName="isActive"
+                    class="form-check-input"
+                />
+                <label class="form-check-label" for="isActive">Active</label>
+            </div>
+        </div>
+
+        <div class="alert alert-danger" *ngIf="error">
+            {{error}}
+        </div>
+
+        <div class="form-group mt-3">
+            <button type="submit" [disabled]="submitting" class="btn btn-primary me-2">
+                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                {{isEditMode ? 'Update' : 'Create'}}
+            </button>
+            <button type="button" class="btn btn-link" (click)="cancel()">Cancel</button>
+        </div>
+    </form>
 </div> 

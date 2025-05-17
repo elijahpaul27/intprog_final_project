@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
@@ -6,6 +5,11 @@ const validateRequest = require('../middleware/validate-request');
 const authorize = require('../middleware/authorize');
 const Role = require('../helpers/role');
 const accountService = require('./account.service');
+const DOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+
+const window = new JSDOM('').window;
+const purify = DOMPurify(window);
 
 // routes
 router.post('/authenticate', authenticateSchema, authenticate);
@@ -24,6 +28,10 @@ router.delete('/:id', authorize(), _delete);
 
 module.exports = router;
 
+function sanitizeInput(input) {
+    return purify.sanitize(input);
+}
+
 function authenticateSchema(req, res, next) {
     const schema = Joi.object({
         email: Joi.string().required(),
@@ -34,8 +42,10 @@ function authenticateSchema(req, res, next) {
 
 function authenticate(req, res, next) {
     const { email, password } = req.body;
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPassword = sanitizeInput(password);
     const ipAddress = req.ip;
-    accountService.authenticate({ email, password, ipAddress })
+    accountService.authenticate({ email: sanitizedEmail, password: sanitizedPassword, ipAddress })
         .then(({ refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
             res.json(account);
@@ -92,7 +102,13 @@ function registerSchema(req, res, next) {
 }
 
 function register(req, res, next) {
-    accountService.register(req.body, req.get('origin'))
+    const sanitizedBody = {
+        ...req.body,
+        firstName: sanitizeInput(req.body.firstName),
+        lastName: sanitizeInput(req.body.lastName),
+        email: sanitizeInput(req.body.email)
+    };
+    accountService.register(sanitizedBody, req.get('origin'))
         .then(() => res.json({ message: 'Registration successful, please check your email for verification instructions' }))
         .catch(next);
 }
@@ -118,7 +134,8 @@ function forgotPasswordSchema(req, res, next) {
 }
 
 function forgotPassword(req, res, next) {
-    accountService.forgotPassword(req.body, req.get('origin'))
+    const sanitizedEmail = sanitizeInput(req.body.email);
+    accountService.forgotPassword({ email: sanitizedEmail }, req.get('origin'))
         .then(() => res.json({ message: 'Please check your email for password reset instructions' }))
         .catch(next);
 }
@@ -182,7 +199,13 @@ function createSchema(req, res, next) {
 }
 
 function create(req, res, next) {
-    accountService.create(req.body)
+    const sanitizedBody = {
+        ...req.body,
+        firstName: sanitizeInput(req.body.firstName),
+        lastName: sanitizeInput(req.body.lastName),
+        email: sanitizeInput(req.body.email)
+    };
+    accountService.create(sanitizedBody)
         .then(account => res.json(account))
         .catch(next);
 }
@@ -212,7 +235,13 @@ function update(req, res, next) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    accountService.update(req.params.id, req.body)
+    const sanitizedBody = {
+        ...req.body,
+        firstName: sanitizeInput(req.body.firstName),
+        lastName: sanitizeInput(req.body.lastName),
+        email: sanitizeInput(req.body.email)
+    };
+    accountService.update(req.params.id, sanitizedBody)
         .then(account => res.json(account))
         .catch(next);
 }

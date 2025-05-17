@@ -1,17 +1,56 @@
 export interface Request {
-    id: number;
-    employeeId: number;
-    workflowId: number;
+    id?: number;
+    title: string;
+    description: string;
     status: RequestStatus;
-    currentStep: number;
-    data: any;
-    createdAt: Date;
-    updatedAt: Date;
+    priority: RequestPriority;
+    workflowId: number;
+    workflow?: {
+        id: number;
+        name: string;
+        steps: WorkflowStep[];
+    };
+    requesterId: number;
+    requester?: {
+        id: number;
+        firstName: string;
+        lastName: string;
+        email: string;
+    };
+    currentStep?: number;
+    currentDepartmentId?: number;
+    currentDepartment?: {
+        id: number;
+        name: string;
+    };
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export enum RequestStatus {
-    PENDING = 'PENDING',
-    APPROVED = 'APPROVED',
-    REJECTED = 'REJECTED',
-    CANCELLED = 'CANCELLED'
+    Pending = 'pending',
+    InProgress = 'in_progress',
+    Completed = 'completed',
+    Rejected = 'rejected'
+}
+
+export enum RequestPriority {
+    Low = 'low',
+    Medium = 'medium',
+    High = 'high',
+    Urgent = 'urgent'
+}
+
+export interface WorkflowStep {
+    id?: number;
+    name: string;
+    description?: string;
+    order: number;
+    departmentId: number;
+    department?: {
+        id: number;
+        name: string;
+    };
+    isRequired: boolean;
+    estimatedDays: number;
 } 

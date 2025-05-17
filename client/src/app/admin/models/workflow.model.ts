@@ -1,17 +1,29 @@
 export interface Workflow {
-    id: number;
+    id?: number;
     name: string;
     description: string;
-    departmentId: number;
+    type: string;
+    employeeId: number;
+    totalSteps: number;
+    isActive: boolean;
     steps: WorkflowStep[];
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface WorkflowStep {
-    id: number;
+    id?: number;
     name: string;
+    description: string;
     order: number;
-    approverRole: string;
-    isActive: boolean;
+    departmentId: number;
+    department?: {
+        id: number;
+        name: string;
+    };
+    isRequired: boolean;
+    estimatedDays: number;
+    workflowId?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
 } 

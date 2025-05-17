@@ -20,15 +20,20 @@ export class AccountService {
     ) {
         this.accountSubject = new BehaviorSubject<Account>(null);
         this.account = this.accountSubject.asObservable();
+        console.log('AccountService initialized');
     }
 
     public get accountValue(): Account {
-        return this.accountSubject.value;
+        const value = this.accountSubject.value;
+        console.log('AccountService - Getting account value:', value);
+        return value;
     }
 
     login(email: string, password: string) {
+        console.log('AccountService - Attempting login for:', email);
         return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { withCredentials: true })
             .pipe(map(account => {
+                console.log('AccountService - Login successful:', account);
                 this.accountSubject.next(account);
                 this.startRefreshTokenTimer();
                 return account;
@@ -36,6 +41,7 @@ export class AccountService {
     }
 
     logout() {
+        console.log('AccountService - Logging out');
         this.http.post<any>(`${baseUrl}/revoke-token`, {}, { withCredentials: true }).subscribe();
         this.stopRefreshTokenTimer();
         this.accountSubject.next(null);
@@ -43,8 +49,10 @@ export class AccountService {
     }
     
     refreshToken() {
+        console.log('AccountService - Refreshing token');
         return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
             .pipe(map((account) => {
+                console.log('AccountService - Token refreshed:', account);
                 this.accountSubject.next(account);
                 this.startRefreshTokenTimer();
                 return account;
@@ -118,6 +126,10 @@ export class AccountService {
     private startRefreshTokenTimer() {
         // parse json object from base64 encoded jwt token
         const jwtToken = JSON.parse(atob(this.accountValue.jwtToken.split('.')[1]));
+        console.log('AccountService - Starting refresh token timer:', {
+            tokenExpiry: new Date(jwtToken.exp * 1000),
+            currentTime: new Date()
+        });
 
         // set a timeout to refresh the token a minute before it expires
         const expires = new Date(jwtToken.exp * 1000);
@@ -126,6 +138,7 @@ export class AccountService {
     }
 
     private stopRefreshTokenTimer() {
+        console.log('AccountService - Stopping refresh token timer');
         clearTimeout(this.refreshTokenTimeout);
     }
 }
