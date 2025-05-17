@@ -1,0 +1,149 @@
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" [class.sidebar-collapsed]="isSidebarCollapsed">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="refreshData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Employees</h5>
+                            <p class="card-text display-6">{{ employees?.length || 0 }}</p>
+                            <small>Active employees in the system</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Departments</h5>
+                            <p class="card-text display-6">{{ departments?.length || 0 }}</p>
+                            <small>Total departments</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Requests</h5>
+                            <p class="card-text display-6">{{ requests?.length || 0 }}</p>
+                            <small>All time requests</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Requests</h5>
+                            <p class="card-text display-6">{{ pendingRequests?.length || 0 }}</p>
+                            <small>Awaiting approval</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Overview -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Employee Overview</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let employee of employees">
+                                            <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+                                            <td>{{ getDepartmentName(employee.departmentId) }}</td>
+                                            <td>{{ employee.position }}</td>
+                                            <td>{{ employee.email }}</td>
+                                            <td>
+                                                <span class="badge" [ngClass]="employee.isActive ? 'bg-success' : 'bg-danger'">
+                                                    {{ employee.isActive ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Overview -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Department Overview</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                <div *ngFor="let department of departments" class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ department.name }}</h6>
+                                        <small class="text-muted">{{ getEmployeeCount(department.id) }} employees</small>
+                                    </div>
+                                    <p class="mb-1">{{ department.description }}</p>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             [style.width.%]="getDepartmentEmployeePercentage(department.id)"
+                                             [attr.aria-valuenow]="getDepartmentEmployeePercentage(department.id)" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Recent Requests</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                <a *ngFor="let request of recentRequests" 
+                                   [routerLink]="['/requests', request.id]"
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ getEmployeeName(request.employeeId) }}</h6>
+                                        <small [ngClass]="getStatusClass(request.status)">
+                                            {{ request.status }}
+                                        </small>
+                                    </div>
+                                    <p class="mb-1">{{ request.data }}</p>
+                                    <small>{{ request.createdAt | date:'medium' }}</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+  

@@ -1,0 +1,118 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Requests</h2>
+        <button class="btn btn-primary" routerLink="/requests/create">
+            <i class="fas fa-plus"></i> New Request
+        </button>
+    </div>
+
+    <div *ngIf="loading" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="statusFilter === 'ALL' ? 'btn-primary' : 'btn-outline-primary'"
+                    (click)="filterByStatus('ALL')"
+                >
+                    All
+                </button>
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="statusFilter === RequestStatus.PENDING ? 'btn-warning' : 'btn-outline-warning'"
+                    (click)="filterByStatus(RequestStatus.PENDING)"
+                >
+                    Pending
+                </button>
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="statusFilter === RequestStatus.APPROVED ? 'btn-success' : 'btn-outline-success'"
+                    (click)="filterByStatus(RequestStatus.APPROVED)"
+                >
+                    Approved
+                </button>
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="statusFilter === RequestStatus.REJECTED ? 'btn-danger' : 'btn-outline-danger'"
+                    (click)="filterByStatus(RequestStatus.REJECTED)"
+                >
+                    Rejected
+                </button>
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="statusFilter === RequestStatus.CANCELLED ? 'btn-secondary' : 'btn-outline-secondary'"
+                    (click)="filterByStatus(RequestStatus.CANCELLED)"
+                >
+                    Cancelled
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Employee</th>
+                    <th>Workflow</th>
+                    <th>Status</th>
+                    <th>Current Step</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let request of filteredRequests">
+                    <td>{{ getEmployeeName(request.employeeId) }}</td>
+                    <td>{{ getWorkflowName(request.workflowId) }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="getStatusClass(request.status)">
+                            {{ request.status }}
+                        </span>
+                    </td>
+                    <td>{{ request.currentStep }}</td>
+                    <td>{{ request.createdAt | date:'mediumDate' }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" (click)="viewRequest(request.id)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button
+                                *ngIf="request.status === RequestStatus.PENDING"
+                                class="btn btn-sm btn-outline-success"
+                                (click)="approveRequest(request.id)"
+                            >
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button
+                                *ngIf="request.status === RequestStatus.PENDING"
+                                class="btn btn-sm btn-outline-danger"
+                                (click)="rejectRequest(request.id)"
+                            >
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && filteredRequests.length === 0" class="text-center mt-4">
+        <p class="text-muted">No requests found. Create your first request!</p>
+    </div>
+</div> 

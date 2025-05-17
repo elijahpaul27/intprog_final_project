@@ -1,0 +1,102 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ isViewMode ? 'View Request' : 'Create Request' }}</h3>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
+                        <div *ngIf="error" class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+
+                        <div *ngIf="isViewMode && currentRequest" class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>Request Details</h5>
+                                <span class="badge" [ngClass]="getStatusClass(currentRequest.status)">
+                                    {{ currentRequest.status }}
+                                </span>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Created:</strong> {{ currentRequest.createdAt | date:'medium' }}</p>
+                                    <p><strong>Current Step:</strong> {{ currentRequest.currentStep }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Last Updated:</strong> {{ currentRequest.updatedAt | date:'medium' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="employeeId" class="form-label">Employee</label>
+                            <select
+                                class="form-select"
+                                id="employeeId"
+                                formControlName="employeeId"
+                                [ngClass]="{ 'is-invalid': f['employeeId'].touched && f['employeeId'].errors }"
+                            >
+                                <option value="">Select Employee</option>
+                                <option *ngFor="let employee of employees" [value]="employee.id">
+                                    {{ getEmployeeName(employee) }}
+                                </option>
+                            </select>
+                            <div *ngIf="f['employeeId'].touched && f['employeeId'].errors" class="invalid-feedback">
+                                <div *ngIf="f['employeeId'].errors['required']">Employee is required</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="workflowId" class="form-label">Workflow</label>
+                            <select
+                                class="form-select"
+                                id="workflowId"
+                                formControlName="workflowId"
+                                [ngClass]="{ 'is-invalid': f['workflowId'].touched && f['workflowId'].errors }"
+                            >
+                                <option value="">Select Workflow</option>
+                                <option *ngFor="let workflow of workflows" [value]="workflow.id">
+                                    {{ workflow.name }}
+                                </option>
+                            </select>
+                            <div *ngIf="f['workflowId'].touched && f['workflowId'].errors" class="invalid-feedback">
+                                <div *ngIf="f['workflowId'].errors['required']">Workflow is required</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Request Data</label>
+                            <textarea
+                                class="form-control"
+                                id="data"
+                                rows="4"
+                                formControlName="data"
+                                [ngClass]="{ 'is-invalid': f['data'].touched && f['data'].errors }"
+                            ></textarea>
+                            <div *ngIf="f['data'].touched && f['data'].errors" class="invalid-feedback">
+                                <div *ngIf="f['data'].errors['required']">Request data is required</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" routerLink="/requests">
+                                {{ isViewMode ? 'Back' : 'Cancel' }}
+                            </button>
+                            <button
+                                *ngIf="!isViewMode"
+                                type="submit"
+                                class="btn btn-primary"
+                                [disabled]="loading || requestForm.invalid"
+                            >
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                                Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

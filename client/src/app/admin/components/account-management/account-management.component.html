@@ -1,0 +1,42 @@
+<div class="container mt-4">
+    <h2>Account Management</h2>
+    
+    <div *ngIf="error" class="alert alert-danger">{{error}}</div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let account of accounts">
+                    <td>{{account.title}} {{account.firstName}} {{account.lastName}}</td>
+                    <td>{{account.email}}</td>
+                    <td>{{account.role}}</td>
+                    <td>
+                        <span [class]="'badge ' + (account.isBlocked ? 'bg-danger' : 'bg-success')">
+                            {{account.isBlocked ? 'Blocked' : 'Active'}}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" (click)="toggleBlockAccount(account)">
+                            {{account.isBlocked ? 'Unblock' : 'Block'}}
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="deleteAccount(account.id)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="accounts.length === 0">
+                    <td colspan="5" class="text-center">No accounts found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> 

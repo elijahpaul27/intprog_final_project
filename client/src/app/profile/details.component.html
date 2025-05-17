@@ -1,0 +1,9 @@
+<h1>My Profile</h1>
+<p *ngIf="account; else loadingOrNotFound">
+    <strong>Name: </strong> {{account.title}} {{account.firstName}} {{account.lastName}}<br />
+    <strong>Email: </strong> {{account.email}}
+</p>
+<ng-template #loadingOrNotFound>
+    <p>Profile not found or loading...</p>
+</ng-template>
+<p><a routerLink="update">Update Profile</a></p>

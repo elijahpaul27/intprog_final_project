@@ -1,0 +1,58 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ isEditMode ? 'Edit Department' : 'Create Department' }}</h3>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="departmentForm" (ngSubmit)="onSubmit()">
+                        <div *ngIf="error" class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Department Name</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="name"
+                                formControlName="name"
+                                [ngClass]="{ 'is-invalid': f['name'].touched && f['name'].errors }"
+                            >
+                            <div *ngIf="f['name'].touched && f['name'].errors" class="invalid-feedback">
+                                <div *ngIf="f['name'].errors['required']">Name is required</div>
+                                <div *ngIf="f['name'].errors['minlength']">Name must be at least 3 characters</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea
+                                class="form-control"
+                                id="description"
+                                rows="4"
+                                formControlName="description"
+                                [ngClass]="{ 'is-invalid': f['description'].touched && f['description'].errors }"
+                            ></textarea>
+                            <div *ngIf="f['description'].touched && f['description'].errors" class="invalid-feedback">
+                                <div *ngIf="f['description'].errors['required']">Description is required</div>
+                                <div *ngIf="f['description'].errors['minlength']">Description must be at least 10 characters</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" routerLink="/departments">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" [disabled]="loading || departmentForm.invalid">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                                {{ isEditMode ? 'Update' : 'Create' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

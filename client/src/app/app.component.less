@@ -1,0 +1,42 @@
+.navbar {
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 56px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+
+    .navbar-brand {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.25rem;
+        }
+    }
+}
+
+.app-container {
+    padding-top: 56px; // Height of the navbar
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    position: relative;
+    width: 100%;
+}
+
+// Responsive adjustments
+@media (max-width: 767.98px) {
+    .navbar {
+        .navbar-brand {
+            font-size: 1.1rem;
+        }
+    }
+}

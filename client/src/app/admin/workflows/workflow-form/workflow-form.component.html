@@ -1,0 +1,138 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ isEditMode ? 'Edit Workflow' : 'Create Workflow' }}</h3>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="workflowForm" (ngSubmit)="onSubmit()">
+                        <div *ngIf="error" class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Workflow Name</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="name"
+                                formControlName="name"
+                                [ngClass]="{ 'is-invalid': f['name'].touched && f['name'].errors }"
+                            >
+                            <div *ngIf="f['name'].touched && f['name'].errors" class="invalid-feedback">
+                                <div *ngIf="f['name'].errors['required']">Name is required</div>
+                                <div *ngIf="f['name'].errors['minlength']">Name must be at least 3 characters</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea
+                                class="form-control"
+                                id="description"
+                                rows="3"
+                                formControlName="description"
+                                [ngClass]="{ 'is-invalid': f['description'].touched && f['description'].errors }"
+                            ></textarea>
+                            <div *ngIf="f['description'].touched && f['description'].errors" class="invalid-feedback">
+                                <div *ngIf="f['description'].errors['required']">Description is required</div>
+                                <div *ngIf="f['description'].errors['minlength']">Description must be at least 10 characters</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="departmentId" class="form-label">Department</label>
+                            <select
+                                class="form-select"
+                                id="departmentId"
+                                formControlName="departmentId"
+                                [ngClass]="{ 'is-invalid': f['departmentId'].touched && f['departmentId'].errors }"
+                            >
+                                <option value="">Select Department</option>
+                                <option *ngFor="let dept of departments" [value]="dept.id">
+                                    {{ dept.name }}
+                                </option>
+                            </select>
+                            <div *ngIf="f['departmentId'].touched && f['departmentId'].errors" class="invalid-feedback">
+                                <div *ngIf="f['departmentId'].errors['required']">Department is required</div>
+                            </div>
+                        </div>
+
+                        <div formArrayName="steps" class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">Workflow Steps</h4>
+                                <button type="button" class="btn btn-outline-primary btn-sm" (click)="addStep()">
+                                    <i class="fas fa-plus"></i> Add Step
+                                </button>
+                            </div>
+
+                            <div *ngFor="let step of steps.controls; let i = index" [formGroupName]="i" class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h5 class="card-title mb-0">Step {{ i + 1 }}</h5>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeStep(i)" [disabled]="steps.length === 1">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label [for]="'stepName' + i" class="form-label">Step Name</label>
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                [id]="'stepName' + i"
+                                                formControlName="name"
+                                                [ngClass]="{ 'is-invalid': step.get('name')?.touched && step.get('name')?.errors }"
+                                            >
+                                            <div *ngIf="step.get('name')?.touched && step.get('name')?.errors" class="invalid-feedback">
+                                                <div *ngIf="step.get('name')?.errors['required']">Step name is required</div>
+                                                <div *ngIf="step.get('name')?.errors['minlength']">Step name must be at least 3 characters</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label [for]="'approverRole' + i" class="form-label">Approver Role</label>
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                [id]="'approverRole' + i"
+                                                formControlName="approverRole"
+                                                [ngClass]="{ 'is-invalid': step.get('approverRole')?.touched && step.get('approverRole')?.errors }"
+                                            >
+                                            <div *ngIf="step.get('approverRole')?.touched && step.get('approverRole')?.errors" class="invalid-feedback">
+                                                <div *ngIf="step.get('approverRole')?.errors['required']">Approver role is required</div>
+                                                <div *ngIf="step.get('approverRole')?.errors['minlength']">Approver role must be at least 3 characters</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input"
+                                            [id]="'isActive' + i"
+                                            formControlName="isActive"
+                                        >
+                                        <label class="form-check-label" [for]="'isActive' + i">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" routerLink="/workflows">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" [disabled]="loading || workflowForm.invalid">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                                {{ isEditMode ? 'Update' : 'Create' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
