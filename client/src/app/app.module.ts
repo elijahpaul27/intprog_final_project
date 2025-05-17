@@ -4,6 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { environment } from '../environments/environment';
 
 // used to create fake backend
 import { fakeBackendProvider } from './_helpers';
@@ -38,7 +39,7 @@ import { AdminModule } from './admin/admin.module';
         { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
 
         // provider used to create fake backend
-        fakeBackendProvider
+        environment.useFakeBackend ? fakeBackendProvider : []
     ],
     bootstrap: [AppComponent],
     schemas: [NO_ERRORS_SCHEMA]

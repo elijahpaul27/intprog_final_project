@@ -1,0 +1,29 @@
+{
+    "database": {
+        "host": "153.92.15.31",
+        "port": 3306,
+        "user": "u875409848_alino",
+        "password": "9T2Z5$3UKkgSYzE",
+        "database": "u875409848_alino",
+        "dialect": "mysql",
+        "dialectOptions": {
+            "connectTimeout": 60000
+        },
+        "pool": {
+            "max": 5,
+            "min": 0,
+            "acquire": 30000,
+            "idle": 10000
+        }
+    },
+    "secret": "mrbeans-secure-jwt-secret-key-2024",
+    "emailFrom": "mrbeans.dev@gmail.com",
+    "smtpOptions": {
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "auth": {
+            "user": "mrbeans.dev@gmail.com",
+            "pass": "gezv stxl piar knuw"
+        }
+    }
+} 
