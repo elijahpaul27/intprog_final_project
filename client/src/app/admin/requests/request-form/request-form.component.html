@@ -40,11 +40,27 @@
                             >
                                 <option value="">Select Employee</option>
                                 <option *ngFor="let employee of employees" [value]="employee.id">
-                                    {{ getEmployeeName(employee) }}
+                                    {{ employee.firstName }} {{ employee.lastName }}
                                 </option>
                             </select>
                             <div *ngIf="f['employeeId'].touched && f['employeeId'].errors" class="invalid-feedback">
                                 <div *ngIf="f['employeeId'].errors['required']">Employee is required</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Type</label>
+                            <select
+                                class="form-select"
+                                id="type"
+                                formControlName="type"
+                                [ngClass]="{ 'is-invalid': f['type'].touched && f['type'].errors }"
+                            >
+                                <option value="">Select Type</option>
+                                <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+                            </select>
+                            <div *ngIf="f['type'].touched && f['type'].errors" class="invalid-feedback">
+                                <div *ngIf="f['type'].errors['required']">Type is required</div>
                             </div>
                         </div>
 
@@ -99,4 +115,4 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
