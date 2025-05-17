@@ -9,9 +9,12 @@ function model(sequelize) {
         status: { type: DataTypes.ENUM('pending', 'approved', 'rejected'), defaultValue: 'pending' },
         details: { type: DataTypes.JSON },
         currentStep: { type: DataTypes.INTEGER, defaultValue: 1 },
-        totalSteps: { type: DataTypes.INTEGER, allowNull: false },
+        totalSteps: { type: DataTypes.INTEGER, defaultValue: 0 },
         created: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
-        updated: { type: DataTypes.DATE }
+        updated: { type: DataTypes.DATE },
+        name: { type: DataTypes.STRING },
+        description: { type: DataTypes.TEXT },
+        isActive: { type: DataTypes.BOOLEAN, defaultValue: true }
     };
 
     const options = {
@@ -19,4 +22,4 @@ function model(sequelize) {
     };
 
     return sequelize.define('workflow', attributes, options);
-} 
+}

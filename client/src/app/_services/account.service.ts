@@ -58,15 +58,17 @@ export class AccountService {
                 return account;
             }));
     }
-    
-    register(account: Account) {
-        console.log(account)
+      register(account: Account) {
+        console.log('AccountService - Registering account:', account);
         return this.http.post(`${baseUrl}/register`, account, { withCredentials: true })
-            .pipe(map((account: any) => {
-                // auto login after registration
-                this.accountSubject.next(account);
-                this.startRefreshTokenTimer();
-                return account;
+            .pipe(map((response: any) => {
+                // Don't auto login after registration since verification is required
+                // Only update the account if we have a valid token
+                if (response && response.jwtToken) {
+                    this.accountSubject.next(response);
+                    this.startRefreshTokenTimer();
+                }
+                return response;
             }));
     }
     
@@ -121,9 +123,13 @@ export class AccountService {
             }));
     }
     
-    private refreshTokenTimeout;
-
-    private startRefreshTokenTimer() {
+    private refreshTokenTimeout;    private startRefreshTokenTimer() {
+        // Check if account and jwtToken exist before proceeding
+        if (!this.accountValue || !this.accountValue.jwtToken) {
+            console.log('AccountService - No JWT token available, skipping refresh timer');
+            return;
+        }
+        
         // parse json object from base64 encoded jwt token
         const jwtToken = JSON.parse(atob(this.accountValue.jwtToken.split('.')[1]));
         console.log('AccountService - Starting refresh token timer:', {
