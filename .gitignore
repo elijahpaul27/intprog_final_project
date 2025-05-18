@@ -38,8 +38,6 @@
 
 # Misc
 .DS_Store
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -68,11 +66,9 @@ desktop.ini
 .yarn-integrity
 
 # dotenv environment variable files
-.env
 .env.development.local
 .env.test.local
 .env.production.local
-.env.local
 
 # parcel-bundler cache
 .cache
@@ -114,3 +110,4 @@ public
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.* 
+config.bat

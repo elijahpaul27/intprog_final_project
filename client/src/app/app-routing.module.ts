@@ -3,12 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './_components/layout/layout.component';
 import { Role } from './_models';
 import { RoleGuard } from './admin/guards/role.guard';
+import { AuthGuard } from './_helpers/auth.guard';
 import { HomeComponent } from './home/home.component';
 
-const routes: Routes = [
-    {
+const routes: Routes = [    {
         path: '',
         component: LayoutComponent,
+        canActivate: [AuthGuard], // Add AuthGuard to protect all routes within Layout
         children: [
             // Routes accessible by all authenticated users
             { path: '', redirectTo: 'home', pathMatch: 'full' },

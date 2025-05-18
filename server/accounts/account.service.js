@@ -259,8 +259,10 @@ function randomTokenString() {
 }
 
 function basicDetails(account) {
-    const { id, title, firstName, lastName, email, role, created, updated, isVerified } = account;
-    return { id, title, firstName, lastName, email, role, created, updated, isVerified };
+    const { id, title, firstName, lastName, email, role, created, updated, isVerified, isActive } = account;
+    // If isActive is undefined (for older records), default it to true
+    const accountIsActive = isActive === undefined ? true : isActive;
+    return { id, title, firstName, lastName, email, role, created, updated, isVerified, isActive: accountIsActive };
 }
 
 async function sendVerificationEmail(account, origin) {
