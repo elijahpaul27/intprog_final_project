@@ -4,11 +4,13 @@ import { LayoutComponent } from './_components/layout/layout.component';
 import { Role } from './_models';
 import { RoleGuard } from './admin/guards/role.guard';
 import { HomeComponent } from './home/home.component';
+import { AuthGuard } from './_guards/auth.guard';
 
 const routes: Routes = [
     {
         path: '',
         component: LayoutComponent,
+        canActivate: [AuthGuard],
         children: [
             // Routes accessible by all authenticated users
             { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -24,7 +26,12 @@ const routes: Routes = [
             }
         ]
     },
-    { path: 'account', loadChildren: () => import('./account/account.module').then(m => m.AccountModule) }
+    { 
+        path: 'account', 
+        loadChildren: () => import('./account/account.module').then(m => m.AccountModule) 
+    },
+    // Redirect any unknown routes to the login page
+    { path: '**', redirectTo: 'account/login' }
 ];
 
 @NgModule({

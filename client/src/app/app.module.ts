@@ -35,11 +35,10 @@ import { AdminModule } from './admin/admin.module';
         HomeComponent
     ],
     providers: [
-        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-
         // provider used to create fake backend
-        environment.useFakeBackend ? fakeBackendProvider : []
+        environment.useFakeBackend ? fakeBackendProvider : [],
+        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
     ],
     bootstrap: [AppComponent],
     schemas: [NO_ERRORS_SCHEMA]

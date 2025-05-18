@@ -50,7 +50,8 @@ export class LoginComponent implements OnInit {
                     this.router.navigateByUrl(returnUrl);
                 },
                 error: error => {
-                    this.alertService.error(error);
+                    const errorMessage = error?.error?.message || 'An error occurred during login';
+                    this.alertService.error(errorMessage);
                     this.loading = false;
                 }
             });

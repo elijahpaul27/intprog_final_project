@@ -344,6 +344,8 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             let params = body;
             let account = accounts.find(x => x.id === idFromUrl(url));
         
+            if (!account) return error('Account not found');
+        
             // user accounts can update own profile and admin accounts can update all profiles
             if (account.id !== currentAccount().id && !isAuthorized(Role.Admin)) {
                 return unauthorized();
@@ -592,8 +594,13 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         }
 
         function createRequest() {
+            if (!isAuthenticated()) return unauthorized();
+        
             const request = body;
             request.id = requests.length ? Math.max(...requests.map(x => x.id)) + 1 : 1;
+            request.employeeId = currentAccount().id;
+            request.status = 'PENDING';
+            request.currentStep = 1;
             request.createdAt = new Date().toISOString();
             request.updatedAt = new Date().toISOString();
             requests.push(request);
@@ -666,6 +673,9 @@ function initializeTestData() {
         const testAccounts = [
             {
                 id: 1,
+                title: 'Mr',
+                firstName: 'Admin',
+                lastName: 'User',
                 email: 'jollyally28@gmail.com',
                 password: 'Admin123!',
                 role: Role.Admin,
@@ -693,13 +703,6 @@ function initializeTestData() {
                 description: 'Handles software development, infrastructure, and support',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
-            },
-            {
-                id: 3,
-                name: 'Finance',
-                description: 'Manages financial operations and accounting',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
             }
         ];
         localStorage.setItem(departmentsKey, JSON.stringify(testDepartments));
@@ -712,10 +715,10 @@ function initializeTestData() {
                 id: 1,
                 firstName: 'John',
                 lastName: 'Doe',
-                email: 'john.doe@company.com',
-                departmentId: 1,
+                email: 'john.doe@example.com',
                 position: 'HR Manager',
-                hireDate: new Date('2020-01-15').toISOString(),
+                departmentId: 1,
+                isActive: true,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             },
@@ -723,21 +726,10 @@ function initializeTestData() {
                 id: 2,
                 firstName: 'Jane',
                 lastName: 'Smith',
-                email: 'jane.smith@company.com',
+                email: 'jane.smith@example.com',
+                position: 'IT Manager',
                 departmentId: 2,
-                position: 'Senior Developer',
-                hireDate: new Date('2019-06-01').toISOString(),
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            },
-            {
-                id: 3,
-                firstName: 'Mike',
-                lastName: 'Johnson',
-                email: 'mike.johnson@company.com',
-                departmentId: 3,
-                position: 'Financial Analyst',
-                hireDate: new Date('2021-03-10').toISOString(),
+                isActive: true,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             }
@@ -767,44 +759,6 @@ function initializeTestData() {
                         order: 2,
                         approverRole: 'Manager',
                         isActive: true
-                    },
-                    {
-                        id: 3,
-                        name: 'HR Review',
-                        order: 3,
-                        approverRole: 'HR',
-                        isActive: true
-                    }
-                ],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            },
-            {
-                id: 2,
-                name: 'Expense Reimbursement',
-                description: 'Process for claiming business expenses',
-                departmentId: 3,
-                steps: [
-                    {
-                        id: 1,
-                        name: 'Submit Receipts',
-                        order: 1,
-                        approverRole: 'Employee',
-                        isActive: true
-                    },
-                    {
-                        id: 2,
-                        name: 'Manager Approval',
-                        order: 2,
-                        approverRole: 'Manager',
-                        isActive: true
-                    },
-                    {
-                        id: 3,
-                        name: 'Finance Review',
-                        order: 3,
-                        approverRole: 'Finance',
-                        isActive: true
                     }
                 ],
                 createdAt: new Date().toISOString(),
@@ -821,29 +775,15 @@ function initializeTestData() {
                 id: 1,
                 employeeId: 1,
                 workflowId: 1,
+                title: 'Annual Leave Request',
+                description: 'Requesting 3 days of annual leave',
                 status: 'PENDING',
-                currentStep: 2,
-                data: 'Requesting 3 days of annual leave from 2024-03-15 to 2024-03-17',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            },
-            {
-                id: 2,
-                employeeId: 2,
-                workflowId: 2,
-                status: 'APPROVED',
-                currentStep: 3,
-                data: 'Expense claim for business trip: $500 for accommodation and $200 for meals',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            },
-            {
-                id: 3,
-                employeeId: 3,
-                workflowId: 1,
-                status: 'REJECTED',
-                currentStep: 2,
-                data: 'Requesting 5 days of sick leave from 2024-03-10',
+                currentStep: 1,
+                data: {
+                    startDate: '2024-03-15',
+                    endDate: '2024-03-17',
+                    reason: 'Family vacation'
+                },
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             }
@@ -852,6 +792,6 @@ function initializeTestData() {
     }
 }
 
-// Call initializeTestData when the application starts
+// Call initializeTestData when the interceptor is created
 initializeTestData();
             

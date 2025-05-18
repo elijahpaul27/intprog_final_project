@@ -1,61 +1,57 @@
 <div class="container-fluid">
     <div class="row">
         <!-- Main Content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" [class.sidebar-collapsed]="isSidebarCollapsed">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="refreshData()">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Employees</h5>
-                            <p class="card-text display-6">{{ employees?.length || 0 }}</p>
-                            <small>Active employees in the system</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Departments</h5>
-                            <p class="card-text display-6">{{ departments?.length || 0 }}</p>
-                            <small>Total departments</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Requests</h5>
-                            <p class="card-text display-6">{{ requests?.length || 0 }}</p>
-                            <small>All time requests</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Pending Requests</h5>
-                            <p class="card-text display-6">{{ pendingRequests?.length || 0 }}</p>
-                            <small>Awaiting approval</small>
+        <main class="col-12">
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="h2">Dashboard</h1>
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="refreshData()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Employee Overview -->
-            <div class="row mb-4">
-                <div class="col-12">
+            <!-- Quick Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Employees</h5>
+                        <p class="card-text display-6">{{ employees?.length || 0 }}</p>
+                        <small>Active employees in the system</small>
+                    </div>
+                </div>
+                <div class="stat-card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Departments</h5>
+                        <p class="card-text display-6">{{ departments?.length || 0 }}</p>
+                        <small>Total departments</small>
+                    </div>
+                </div>
+                <div class="stat-card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Requests</h5>
+                        <p class="card-text display-6">{{ requests?.length || 0 }}</p>
+                        <small>All time requests</small>
+                    </div>
+                </div>
+                <div class="stat-card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Requests</h5>
+                        <p class="card-text display-6">{{ pendingRequests?.length || 0 }}</p>
+                        <small>Awaiting approval</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Employee Overview -->
+                <div class="content-card">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Employee Overview</h5>
@@ -77,11 +73,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Department Overview -->
-            <div class="row">
-                <div class="col-md-6">
+                <!-- Department Overview -->
+                <div class="content-card">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Department Overview</h5>
@@ -106,7 +100,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+
+                <!-- Recent Requests -->
+                <div class="content-card">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Recent Requests</h5>
@@ -135,4 +131,67 @@
         </main>
     </div>
 </div>
+
+<style>
+.header-section {
+    margin-top: 5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    border-radius: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.content-card {
+    height: 100%;
+}
+
+.content-card .card {
+    height: 100%;
+    margin-bottom: 0;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
   

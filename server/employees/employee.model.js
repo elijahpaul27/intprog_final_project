@@ -6,6 +6,9 @@ function model(sequelize) {
     const attributes = {
         accountId: { type: DataTypes.INTEGER, allowNull: false },
         departmentId: { type: DataTypes.INTEGER },
+        firstName: { type: DataTypes.STRING, allowNull: false },
+        lastName: { type: DataTypes.STRING, allowNull: false },
+        email: { type: DataTypes.STRING, allowNull: false, unique: true },
         position: { type: DataTypes.STRING, allowNull: false },
         hireDate: { type: DataTypes.DATE, allowNull: false },
         salary: { type: DataTypes.DECIMAL(10, 2) },

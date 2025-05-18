@@ -58,8 +58,9 @@ export class LayoutComponent implements OnInit {
     }
 
     logout() {
-        this.accountService.logout();
-    }
+    this.accountService.logout();
+    this.router.navigate(['/account/login']);
+}
 
     isAdmin(): boolean {
         if (!this.account) {
