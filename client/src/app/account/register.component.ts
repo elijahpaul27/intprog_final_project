@@ -35,9 +35,7 @@ export class RegisterComponent implements OnInit {
     }
 
     // convenience getter for easy access to form fields
-    get f() { return this.form.controls; }
-
-    onSubmit() {
+    get f() { return this.form.controls; }    onSubmit() {
         this.submitted = true;
     
         // reset alerts on submit
@@ -52,12 +50,17 @@ export class RegisterComponent implements OnInit {
         this.accountService.register(this.form.value)
             .pipe(first())
             .subscribe({
-                next: () => {
+                next: (response) => {
+                    console.log('Registration response:', response);
                     this.alertService.success('Registration successful, please check your email for verification instructions', { keepAfterRouteChange: true });
                     this.router.navigate(['../login'], { relativeTo: this.route });
                 },
                 error: error => {
+                    console.error('Registration error:', error);
                     this.alertService.error(error);
+                    this.loading = false;
+                },
+                complete: () => {
                     this.loading = false;
                 }
             });

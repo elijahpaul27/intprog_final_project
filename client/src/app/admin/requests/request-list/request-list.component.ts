@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RequestService } from '../../services/request.service';
+import { WorkflowService } from '../../services/workflow.service';
+import { EmployeeService } from '../../services/employee.service';
 import { Request, RequestStatus, RequestPriority } from '../../models/request.model';
+import { Employee } from '../../models/employee.model';
+import { Workflow } from '../../models/workflow.model';
 
 @Component({
     selector: 'app-request-list',
@@ -19,32 +23,34 @@ import { Request, RequestStatus, RequestPriority } from '../../models/request.mo
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Requester</th>
-                            <th>Workflow</th>
+                            <th>Employee</th>
+                            <th>Type</th>
                             <th>Status</th>
                             <th>Priority</th>
+                            <th>Workflow</th>
                             <th>Current Step</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let request of requests">
-                            <td>{{request.title}}</td>
-                            <td>{{request.requester?.firstName}} {{request.requester?.lastName}}</td>
-                            <td>{{request.workflow?.name}}</td>
+                            <td>{{request.title || '-'}}</td>
+                            <td>{{getEmployeeName(request.employeeId) || '-'}}</td>
+                            <td>{{request.type || '-'}}</td>
                             <td>
                                 <span class="badge" [ngClass]="getStatusClass(request.status)">
-                                    {{request.status}}
+                                    {{request.status || 'Pending'}}
                                 </span>
                             </td>
                             <td>
                                 <span class="badge" [ngClass]="getPriorityClass(request.priority)">
-                                    {{request.priority}}
+                                    {{request.priority || 'Medium'}}
                                 </span>
                             </td>
+                            <td>{{getWorkflowName(request.workflowId) || '-'}}</td>
                             <td>
-                                <span *ngIf="request.currentStep">
-                                    Step {{request.currentStep}} - {{request.currentDepartment?.name}}
+                                <span>
+                                    {{request.currentStep ? 'Step ' + request.currentStep : '-'}}
                                 </span>
                             </td>
                             <td>
@@ -122,14 +128,26 @@ import { Request, RequestStatus, RequestPriority } from '../../models/request.mo
 })
 export class RequestListComponent implements OnInit {
     requests: Request[] = [];
+    employees: Employee[] = [];
+    workflows: Workflow[] = [];
+    loading = false;
+    error = '';
+    statusFilter = 'ALL';
+    RequestStatus = RequestStatus;
+    filteredRequests: Request[] = [];
 
     constructor(
         private requestService: RequestService,
+        private workflowService: WorkflowService,
+        private employeeService: EmployeeService,
         private router: Router
     ) { }
 
     ngOnInit() {
+        this.loading = true;
         this.loadRequests();
+        this.loadEmployees();
+        this.loadWorkflows();
     }
 
     loadRequests() {
@@ -137,11 +155,60 @@ export class RequestListComponent implements OnInit {
             .subscribe({
                 next: (requests) => {
                     this.requests = requests;
+                    this.filteredRequests = requests;
+                    this.loading = false;
                 },
                 error: (error) => {
                     console.error('Error loading requests:', error);
+                    this.error = 'Failed to load requests. Please try again.';
+                    this.loading = false;
                 }
             });
+    }
+
+    loadEmployees() {
+        this.employeeService.getAll()
+            .subscribe({
+                next: (employees) => {
+                    this.employees = employees;
+                },
+                error: (error) => {
+                    console.error('Error loading employees:', error);
+                }
+            });
+    }
+
+    loadWorkflows() {
+        this.workflowService.getAll()
+            .subscribe({
+                next: (workflows) => {
+                    this.workflows = workflows;
+                },
+                error: (error) => {
+                    console.error('Error loading workflows:', error);
+                }
+            });
+    }
+
+    getEmployeeName(employeeId: number): string {
+        if (!employeeId) return '';
+        const employee = this.employees.find(e => e.id === employeeId);
+        return employee ? `${employee.firstName} ${employee.lastName}` : '';
+    }
+
+    getWorkflowName(workflowId: number): string {
+        if (!workflowId) return '';
+        const workflow = this.workflows.find(w => w.id === workflowId);
+        return workflow ? workflow.name : '';
+    }
+
+    filterByStatus(status: string) {
+        this.statusFilter = status;
+        if (status === 'ALL') {
+            this.filteredRequests = this.requests;
+        } else {
+            this.filteredRequests = this.requests.filter(r => r.status === status);
+        }
     }
 
     addRequest() {
@@ -158,19 +225,59 @@ export class RequestListComponent implements OnInit {
                 .subscribe({
                     next: () => {
                         this.requests = this.requests.filter(x => x.id !== id);
+                        this.filteredRequests = this.filteredRequests.filter(x => x.id !== id);
                     },
                     error: (error) => {
                         console.error('Error deleting request:', error);
+                        this.error = 'Failed to delete request. Please try again.';
                     }
                 });
         }
+    }    getStatusClass(status: RequestStatus): string {
+        if (!status) return 'badge-pending';
+        
+        try {
+            // First, check if it's a valid enum value
+            const validStatuses = Object.values(RequestStatus);
+            const normalizedStatus = typeof status === 'string' ? 
+                status.toLowerCase() : String(status).toLowerCase();
+            
+            // Check if normalized status is valid
+            const isValidStatus = validStatuses.some(s => 
+                typeof s === 'string' && s.toLowerCase() === normalizedStatus);
+            
+            if (isValidStatus) {
+                return `badge-${normalizedStatus}`;
+            } else {
+                // Default to pending if not a valid status
+                return 'badge-pending';
+            }
+        } catch (e) {
+            console.error('Error processing status', e);
+            return 'badge-pending';
+        }
+    }getPriorityClass(priority: RequestPriority): string {
+        if (!priority) return 'badge-medium';
+        
+        try {
+            // First, check if it's a valid enum value
+            const validPriorities = Object.values(RequestPriority);
+            const normalizedPriority = typeof priority === 'string' ? 
+                priority.toLowerCase() : String(priority).toLowerCase();
+            
+            // Check if normalized priority is valid
+            const isValidPriority = validPriorities.some(p => 
+                typeof p === 'string' && p.toLowerCase() === normalizedPriority);
+            
+            if (isValidPriority) {
+                return `badge-${normalizedPriority}`;
+            } else {
+                // Default to medium if not a valid priority
+                return 'badge-medium';
+            }
+        } catch (e) {
+            console.error('Error processing priority', e);
+            return 'badge-medium';
+        }
     }
-
-    getStatusClass(status: RequestStatus): string {
-        return `badge-${status.toLowerCase()}`;
-    }
-
-    getPriorityClass(priority: RequestPriority): string {
-        return `badge-${priority.toLowerCase()}`;
-    }
-} 
+}

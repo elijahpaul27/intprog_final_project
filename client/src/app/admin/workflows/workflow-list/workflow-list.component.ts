@@ -29,7 +29,7 @@ import { Workflow } from '../../models/workflow.model';
                         <tr *ngFor="let workflow of workflows">
                             <td>{{workflow.name}}</td>
                             <td>{{workflow.description}}</td>
-                            <td>{{workflow.steps.length}} steps</td>
+                            <td>{{getStepCount(workflow)}} steps</td>
                             <td>
                                 <div class="form-check form-switch">
                                     <input
@@ -81,6 +81,8 @@ import { Workflow } from '../../models/workflow.model';
 })
 export class WorkflowListComponent implements OnInit {
     workflows: Workflow[] = [];
+    loading = false;
+    error = '';
 
     constructor(
         private workflowService: WorkflowService,
@@ -92,13 +94,17 @@ export class WorkflowListComponent implements OnInit {
     }
 
     loadWorkflows() {
+        this.loading = true;
         this.workflowService.getAll()
             .subscribe({
                 next: (workflows) => {
                     this.workflows = workflows;
+                    this.loading = false;
                 },
                 error: (error) => {
                     console.error('Error loading workflows:', error);
+                    this.error = error.message || 'Failed to load workflows';
+                    this.loading = false;
                 }
             });
     }
@@ -139,4 +145,17 @@ export class WorkflowListComponent implements OnInit {
                 }
             });
     }
-} 
+
+    getStepCount(workflow: any): number {
+        if (workflow.workflowSteps && Array.isArray(workflow.workflowSteps)) {
+            return workflow.workflowSteps.length;
+        }
+        return workflow.totalSteps || 0;
+    }
+
+    getDepartmentName(departmentId: number): string {
+        // This would ideally fetch the department name from a service
+        // For now, just return a placeholder
+        return departmentId ? `Department ${departmentId}` : 'N/A';
+    }
+}

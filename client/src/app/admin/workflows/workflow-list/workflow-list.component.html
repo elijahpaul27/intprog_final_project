@@ -1,7 +1,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Workflows</h2>
-        <button class="btn btn-primary" routerLink="/workflows/create">
+        <button class="btn btn-primary" routerLink="/admin/workflows/add">
             <i class="fas fa-plus"></i> New Workflow
         </button>
     </div>
@@ -20,11 +20,11 @@
         <div class="col-md-6 mb-4" *ngFor="let workflow of workflows">
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">{{ workflow.name }}</h5>
-                    <p class="card-text text-muted">{{ workflow.description }}</p>
+                    <h5 class="card-title">{{ workflow.name || 'Unnamed Workflow' }}</h5>
+                    <p class="card-text text-muted">{{ workflow.description || workflow.type + ' workflow' }}</p>
                     <div class="mb-3">
                         <span class="badge bg-info me-2">
-                            <i class="fas fa-building"></i> {{ getDepartmentName(workflow.departmentId) }}
+                            <i class="fas fa-file-alt"></i> {{ workflow.type || 'General' }}
                         </span>
                         <span class="badge bg-secondary">
                             <i class="fas fa-list-ol"></i> {{ getStepCount(workflow) }} Steps
