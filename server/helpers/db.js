@@ -49,6 +49,7 @@ async function initialize() {
         db.Department = require('../departments/department.model')(sequelize);
         db.Employee = require('../employees/employee.model')(sequelize);
         db.Workflow = require('../workflows/workflow.model')(sequelize);
+        db.WorkflowStep = require('../workflows/workflow-step.model')(sequelize);
         db.Request = require('../requests/request.model')(sequelize);
 
         // define relationships
@@ -64,6 +65,9 @@ async function initialize() {
         db.Employee.hasMany(db.Workflow);
         db.Workflow.belongsTo(db.Employee);
         
+        db.Workflow.hasMany(db.WorkflowStep, { as: 'workflowSteps', foreignKey: 'workflowId', onDelete: 'CASCADE' });
+        db.WorkflowStep.belongsTo(db.Workflow);
+        
         db.Employee.hasMany(db.Request);
         db.Request.belongsTo(db.Employee);
 
@@ -78,4 +82,4 @@ async function initialize() {
         }
         process.exit(1);
     }
-} 
+}

@@ -18,12 +18,14 @@ export class AccountListComponent implements OnInit {
 
     ngOnInit() {
         this.loadAccounts();
-    }
-
-    loadAccounts() {
+    }    loadAccounts() {
         this.accountService.getAll()
             .subscribe(accounts => {
-                this.accounts = accounts;
+                // Ensure all accounts have an isActive property (default to true if missing)
+                this.accounts = accounts.map(account => ({
+                    ...account,
+                    isActive: account.isActive !== undefined ? account.isActive : true
+                }));
             });
     }
 

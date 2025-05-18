@@ -37,9 +37,18 @@ export class AccountService {
         localStorage.removeItem('account');
         this.accountSubject.next(null);
     }
-
-    register(account: Account) {
-        return this.http.post(`${environment.apiUrl}/accounts/register`, account);
+      register(account: Account) {
+        console.log('AccountService - Registering account:', account);
+        return this.http.post(`${baseUrl}/register`, account, { withCredentials: true })
+            .pipe(map((response: any) => {
+                // Don't auto login after registration since verification is required
+                // Only update the account if we have a valid token
+                if (response && response.jwtToken) {
+                    this.accountSubject.next(response);
+                    this.startRefreshTokenTimer();
+                }
+                return response;
+            }));
     }
 
     verifyEmail(token: string) {
@@ -105,5 +114,30 @@ export class AccountService {
                 }
                 return x;
             }));
+    }
+    
+    private refreshTokenTimeout;    private startRefreshTokenTimer() {
+        // Check if account and jwtToken exist before proceeding
+        if (!this.accountValue || !this.accountValue.jwtToken) {
+            console.log('AccountService - No JWT token available, skipping refresh timer');
+            return;
+        }
+        
+        // parse json object from base64 encoded jwt token
+        const jwtToken = JSON.parse(atob(this.accountValue.jwtToken.split('.')[1]));
+        console.log('AccountService - Starting refresh token timer:', {
+            tokenExpiry: new Date(jwtToken.exp * 1000),
+            currentTime: new Date()
+        });
+
+        // set a timeout to refresh the token a minute before it expires
+        const expires = new Date(jwtToken.exp * 1000);
+        const timeout = expires.getTime() - Date.now() - (60 * 1000);
+        this.refreshTokenTimeout = setTimeout(() => this.refreshToken().subscribe(), timeout);
+    }
+
+    private stopRefreshTokenTimer() {
+        console.log('AccountService - Stopping refresh token timer');
+        clearTimeout(this.refreshTokenTimeout);
     }
 }

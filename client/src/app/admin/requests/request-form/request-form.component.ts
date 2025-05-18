@@ -3,8 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RequestService } from '../../services/request.service';
 import { WorkflowService } from '../../services/workflow.service';
+import { EmployeeService } from '../../services/employee.service';
 import { Request, RequestStatus, RequestPriority } from '../../models/request.model';
 import { Workflow } from '../../models/workflow.model';
+import { Employee } from '../../models/employee.model';
 
 @Component({
     selector: 'app-request-form',
@@ -77,6 +79,45 @@ import { Workflow } from '../../models/workflow.model';
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="employeeId">Employee</label>
+                            <select
+                                formControlName="employeeId"
+                                class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.employeeId.errors }"
+                            >
+                                <option value="">Select Employee</option>
+                                <option *ngFor="let employee of employees" [value]="employee.id">
+                                    {{employee.firstName}} {{employee.lastName}}
+                                </option>
+                            </select>
+                            <div *ngIf="submitted && f.employeeId.errors" class="invalid-feedback">
+                                <div *ngIf="f.employeeId.errors.required">Employee is required</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="type">Type</label>
+                            <select
+                                formControlName="type"
+                                class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.type.errors }"
+                            >
+                                <option value="">Select Type</option>
+                                <option *ngFor="let type of types" [value]="type">
+                                    {{type}}
+                                </option>
+                            </select>
+                            <div *ngIf="submitted && f.type.errors" class="invalid-feedback">
+                                <div *ngIf="f.type.errors.required">Type is required</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group mt-3">
                     <button [disabled]="loading" class="btn btn-primary me-2">
                         <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
@@ -110,13 +151,16 @@ export class RequestFormComponent implements OnInit {
     submitted = false;
     workflows: Workflow[] = [];
     priorities = Object.values(RequestPriority);
+    employees: Employee[] = [];
+    types: string[] = ['Leave', 'Expense', 'Purchase', 'Other'];
 
     constructor(
         private formBuilder: FormBuilder,
         private route: ActivatedRoute,
         private router: Router,
         private requestService: RequestService,
-        private workflowService: WorkflowService
+        private workflowService: WorkflowService,
+        private employeeService: EmployeeService
     ) { }
 
     ngOnInit() {
@@ -127,10 +171,13 @@ export class RequestFormComponent implements OnInit {
             title: ['', Validators.required],
             description: ['', Validators.required],
             workflowId: ['', Validators.required],
-            priority: ['', Validators.required]
+            priority: ['', Validators.required],
+            employeeId: ['', Validators.required],
+            type: ['', Validators.required]
         });
 
         this.loadWorkflows();
+        this.loadEmployees();
 
         if (!this.isAddMode) {
             this.requestService.getById(this.id)
@@ -140,7 +187,9 @@ export class RequestFormComponent implements OnInit {
                             title: request.title,
                             description: request.description,
                             workflowId: request.workflowId,
-                            priority: request.priority
+                            priority: request.priority,
+                            employeeId: request.employeeId,
+                            type: request.type
                         });
                     },
                     error: (error) => {
@@ -164,18 +213,37 @@ export class RequestFormComponent implements OnInit {
             });
     }
 
-    onSubmit() {
+    loadEmployees() {
+        this.employeeService.getAll()
+            .subscribe({
+                next: (employees) => {
+                    this.employees = employees;
+                },
+                error: (error) => {
+                    console.error('Error loading employees:', error);
+                }
+            });
+    }    onSubmit() {
         this.submitted = true;
 
         if (this.form.invalid) {
             return;
         }
 
-        const request: Request = {
+        // Create the request object with default pending status
+        const request: any = {
             ...this.form.value,
-            status: RequestStatus.Pending,
-            requesterId: 1 // TODO: Get from auth service
+            status: RequestStatus.Pending
         };
+        
+        // Ensure numeric fields are correctly typed
+        if (request.employeeId && typeof request.employeeId === 'string') {
+            request.employeeId = parseInt(request.employeeId, 10);
+        }
+        
+        if (request.workflowId && typeof request.workflowId === 'string') {
+            request.workflowId = parseInt(request.workflowId, 10);
+        }
 
         this.loading = true;
         if (this.isAddMode) {
@@ -183,9 +251,18 @@ export class RequestFormComponent implements OnInit {
         } else {
             this.updateRequest(request);
         }
-    }
-
-    private createRequest(request: Request) {
+    }private createRequest(request: Request) {
+        // Ensure priority is a valid enum value before submitting
+        if (request.priority && typeof request.priority === 'string') {
+            const normalizedPriority = request.priority.toLowerCase();
+            const validPriorities = Object.values(RequestPriority).map(p => typeof p === 'string' ? p.toLowerCase() : p);
+            
+            if (!validPriorities.includes(normalizedPriority)) {
+                console.warn(`Invalid priority value: ${request.priority}, defaulting to Medium`);
+                request.priority = RequestPriority.Medium;
+            }
+        }
+        
         this.requestService.create(request)
             .subscribe({
                 next: () => {
@@ -196,9 +273,18 @@ export class RequestFormComponent implements OnInit {
                     this.loading = false;
                 }
             });
-    }
-
-    private updateRequest(request: Request) {
+    }    private updateRequest(request: Request) {
+        // Ensure priority is a valid enum value before submitting
+        if (request.priority && typeof request.priority === 'string') {
+            const normalizedPriority = request.priority.toLowerCase();
+            const validPriorities = Object.values(RequestPriority).map(p => typeof p === 'string' ? p.toLowerCase() : p);
+            
+            if (!validPriorities.includes(normalizedPriority)) {
+                console.warn(`Invalid priority value: ${request.priority}, defaulting to Medium`);
+                request.priority = RequestPriority.Medium;
+            }
+        }
+        
         this.requestService.update(this.id, request)
             .subscribe({
                 next: () => {
@@ -214,4 +300,4 @@ export class RequestFormComponent implements OnInit {
     cancel() {
         this.router.navigate(['/admin/requests']);
     }
-} 
+}

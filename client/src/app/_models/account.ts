@@ -8,4 +8,5 @@ export class Account {
     email!: string;
     role!: Role;
     jwtToken?: string;
+    isActive?: boolean; // Added for status display in UI
 }

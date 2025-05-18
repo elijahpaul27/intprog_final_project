@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../helpers/db');
 const authorize = require('../middleware/authorize');
 const Role = require('../helpers/role');
+const bcrypt = require('bcryptjs');
 
 router.post('/', authorize(Role.Admin), create);
 router.get('/', authorize(), getAll);
@@ -13,14 +14,26 @@ router.post('/:id/transfer', authorize(Role.Admin), transfer);
 
 async function create(req, res, next) {
     try {
-        // Get the total count of employees to determine the new accountId
-        const employeeCount = await db.Employee.count();
-        const newAccountId = employeeCount + 1;
-
-        // Create the employee with automatic accountId and hireDate
+        // First create an account for the employee
+        const accountData = {
+            email: req.body.email,
+            passwordHash: await bcrypt.hash('DefaultPassword123', 10), // Default password that should be changed
+            title: 'Mr/Ms',
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            acceptTerms: true,
+            role: 'User',
+            verified: new Date(), // Pre-verified
+            created: new Date()
+        };
+        
+        // Create the account
+        const account = await db.Account.create(accountData);
+        
+        // Now create the employee with the new accountId
         const employeeData = {
             ...req.body,
-            accountId: newAccountId,
+            accountId: account.id,
             hireDate: new Date()
         };
 

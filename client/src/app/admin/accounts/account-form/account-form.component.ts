@@ -26,14 +26,13 @@ export class AccountFormComponent implements OnInit {
 
     ngOnInit() {
         this.id = this.route.snapshot.params['id'];
-        this.isAddMode = !this.id;
-
-        this.form = this.formBuilder.group({
+        this.isAddMode = !this.id;        this.form = this.formBuilder.group({
             title: ['', Validators.required],
             firstName: ['', Validators.required],
             lastName: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]],
             role: ['', Validators.required],
+            isActive: [true],
             password: ['', [Validators.minLength(6), ...(!this.isAddMode ? [] : [Validators.required])]],
             confirmPassword: ['', ...(!this.isAddMode ? [] : [Validators.required])]
         }, {

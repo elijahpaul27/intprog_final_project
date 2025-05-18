@@ -3,9 +3,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": [],
-    "target": "es2015",
-    "useDefineForClassFields": true
+    "types": []
   },
   "files": [
     "src/main.ts"

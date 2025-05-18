@@ -17,6 +17,8 @@ export interface Request {
         lastName: string;
         email: string;
     };
+    employeeId: number;
+    type: string;
     currentStep?: number;
     currentDepartmentId?: number;
     currentDepartment?: {
@@ -53,4 +55,4 @@ export interface WorkflowStep {
     };
     isRequired: boolean;
     estimatedDays: number;
-} 
+}
