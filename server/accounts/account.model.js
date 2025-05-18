@@ -2,8 +2,7 @@ const { DataTypes } = require('sequelize');
 
 module.exports = model;
 
-function model(sequelize) {
-    const attributes = {
+function model(sequelize) {    const attributes = {
         email: { type: DataTypes.STRING, allowNull: false },
         passwordHash: { type: DataTypes.STRING, allowNull: false },
         title: { type: DataTypes.STRING, allowNull: false },
@@ -16,6 +15,7 @@ function model(sequelize) {
         resetToken: { type: DataTypes.STRING },
         resetTokenExpires: { type: DataTypes.DATE },
         passwordReset: { type: DataTypes.DATE },
+        isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
         created: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
         updated: { type: DataTypes.DATE },
         isVerified: {
